@@ -6,16 +6,6 @@ require 'json'
 require 'faye/websocket'
 require 'eventmachine'
 
-class Faye::WebSocket::Client
-  alias_method :original_send, :send
-
-  def send(data)
-    puts "Sending data: #{data.inspect}"
-    original_send(data)
-  end
-end
-
-
 module HassMessageParsingMethods
   def new_data(js_data)
     return {} unless js_data['data']
