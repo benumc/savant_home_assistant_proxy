@@ -1,5 +1,5 @@
 name: "Savant Home Assistant Proxy"
-version: "1.1.0"
+version: "1.1.1"
 slug: "savant_home_assistant_proxy"
 description: "An add-on to run a two-way connection between a Savant System and Home Assistant."
 arch:

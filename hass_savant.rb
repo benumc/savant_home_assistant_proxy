@@ -304,16 +304,17 @@ class Hass
   end
 
   def hass_request?(cmd)
+    cmd = cmd.to_sym
+    p [:debug, cmd, HassRequests.instance_methods(false)]
     HassRequests.instance_methods(false).include?(cmd.to_sym)
   end
 
   def from_savant(req)
     cmd, *params = req.split(',')
-    case cmd
-    when 'subscribe_events' then send_json(type: 'subscribe_events')
-    when 'subscribe_entity' then subscribe_entities(params)
-    when 'state_filter' then @filter = params
-    when hass_request?(cmd) then send(cmd, params)
+    if cmd == 'subscribe_events' then send_json(type: 'subscribe_events')
+    elsif cmd == 'subscribe_entity' then subscribe_entities(params)
+    elsif cmd == 'state_filter' then @filter = params
+    elsif hass_request?(cmd) then send(cmd, *params)
     else p([:error, [:unknown_cmd, cmd, req]])
     end
   end
