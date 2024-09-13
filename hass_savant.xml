@@ -1,0 +1,515 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant"
+  device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.7">
+
+  <notes>
+  </notes>  
+  <control_interfaces preferred="ip">
+    <ip port="8080" response_time_length_ms="1000" protocol="tcp">
+        <send_postfix type="hex">0A</send_postfix>
+        <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
+    </ip>
+  </control_interfaces>
+  <media_interfaces>
+    <data name_on_component="Ethernet">
+      <combined_media>
+        <data_media type="ethernet"/>
+        <control port="8080"/>
+      </combined_media>
+    </data>
+
+
+    <internal name_on_component="Lighting Controller">
+      <environmental_media/>
+      <resource resource_type="ENV_LIGHTINGCONTROLLER_SOURCE"/>
+      <resource resource_type="ENV_FANCONTROLLER_SOURCE"/>
+      <resource resource_type="ENV_DOOR_LOCK_SOURCE"/>
+      <resource resource_type="ENV_GARAGE_DOOR_SOURCE"/>
+      <resource resource_type="ENV_SHADECONTROLLER_SOURCE" />
+    </internal>
+  </media_interfaces>
+  <state_variable_list>
+    <state_variable name="subscribe_all_events" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes">NO</state_variable>
+    <state_variable name="state_filter" owning_logical_component="Home Assistant"  state_center_type="string" state_center_binding="state_filter" user_editable="yes">brightness,state,cover,lock,current_position</state_variable>
+    <state_variable name="HassEntityArray" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="HassEntityArray"></state_variable>
+
+    <state_variable name="FanSet_0" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed Off">0</state_variable>
+    <state_variable name="FanSet_1" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed Low">2</state_variable>
+    <state_variable name="FanSet_2" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed Mid">4</state_variable>
+    <state_variable name="FanSet_3" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed High">7</state_variable>
+
+
+  </state_variable_list>
+  <logical_component logical_component_name="Home Assistant">
+    <implementation>
+      <internal name_on_component="Lighting Controller"/>
+    </implementation>
+
+    <status_messages>
+      <status_message name="ShadeLevel">
+        <data type="character" terminator="_current_position===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="ShadeLevel" type="integer" />
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Brightness">
+        <data type="character" terminator="_brightness===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="Value" type="integer" />
+          <data_map match_required="no">
+            <convert>
+              <multiply>100</multiply>
+              <divide>255</divide>
+              <update state="DimmerLevel" type="integer"></update>
+            </convert>
+          </data_map>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="State">
+        <data type="character" terminator="_state===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="CurrentState" type="string"/>
+          <data_map match_required="no">
+            <map key="closed">
+              <update state="IsShadeOpen" type="boolean">false</update>
+            </map>
+            <map key="open">
+              <update state="IsShadeOpen" type="boolean">true</update>
+            </map>
+            <map key="locked">
+              <update state="DoorLockStatus" type="string">Locked</update>
+            </map>
+            <map key="unlocked">
+              <update state="DoorLockStatus" type="string">Unlocked</update>
+            </map>
+            <map key="on">
+              <update state="IsDimmerOn" type="boolean">true</update>
+              <update state="LightPowerStatus" type="string">ON</update>
+              <update state="IsLightOn" type="boolean">true</update>
+              <update state="GarageDoorStatus" type="string">Open</update>
+            </map>
+            <map key="off">
+              <update state="IsDimmerOn" type="boolean">false</update>
+              <update state="LightPowerStatus" type="string">OFF</update>
+              <update state="IsLightOn" type="boolean">false</update>
+              <update state="GarageDoorStatus" type="string">Closed</update>
+              <update state="DimmerLevel" type="integer">0</update>
+            </map>
+          </data_map>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Attributes">
+        <data type="character" terminator="_attributes===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="CurrentAttributes" type="string"/>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+      <status_message name="OtherUpdate">
+        <data type="character" terminator="===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="Value" type="string" />
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Service">
+        <constant type="character">type:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="Type" type="string" />
+        </data>
+        <constant type="character">entity:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <constant type="character">service:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="ServiceState" type="string"/>
+        </data>
+        <constant type="character">domain:</constant>
+        <data type="character" terminator="," terminator_type="end_of_data">
+          <update state="FriendlyName" type="string"/>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Unhandled">
+        <data type="character" terminator_type="end_of_data">
+          <update state="Unhandled" type="string"></update>
+        </data>
+      </status_message>
+    </status_messages>
+
+    <resource_component_actions resource_type="ENV_FANCONTROLLER_SOURCE">
+      <action name="FanSet">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="not used"/>
+        <action_argument name="Address3" note="not used"/>
+        <action_argument name="Address4" note="not used"/>
+        <action_argument name="Address5" note="not used"/>
+        <action_argument name="Address6" note="not used"/>
+        <action_argument name="FanSpeed" note="Fan Speed 0 - 3"/>
+        <command_interface interface="ip">
+          <!-- Can sequence multiple commands, maybe to turn it off when FanSpeed is 0? -->
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">fan_set,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" state_variable="FanSet_*" wildcard_source="action_argument" wildcard_source_name="FanSpeed"/>
+            </parameter_list>
+            <delay ms_delay="500"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <entity name="Fan" address_components="2">
+        <slider_representation>
+          <press_action name="FanSet"/>
+          <valueSource name="DimmerLevel">
+            <unique_identifier name="Needed" address_component="2"/>
+            <unique_identifier name="DeviceID" address_component="1"/>
+          </valueSource>
+        </slider_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+    </resource_component_actions>
+
+    <resource_component_actions resource_type="ENV_LIGHTINGCONTROLLER_SOURCE">
+      <action name="SwitchOn">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="Savant ID"/>
+        <action_argument name="Address3" note=""/>
+        <action_argument name="Address4" note=""/>
+        <action_argument name="Address5" note=""/>
+        <action_argument name="Address6" note=""/>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">switch_on,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+            </parameter_list>
+            <delay ms_delay="10"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="SwitchOff">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="Savant ID"/>
+        <action_argument name="Address3" note=""/>
+        <action_argument name="Address4" note=""/>
+        <action_argument name="Address5" note=""/>
+        <action_argument name="Address6" note=""/>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">switch_off,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+            </parameter_list>
+            <delay ms_delay="10"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="DimmerSet">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="not used"/>
+        <action_argument name="Address3" note="not used"/>
+        <action_argument name="Address4" note="not used"/>
+        <action_argument name="Address5" note="not used"/>
+        <action_argument name="Address6" note="not used"/>
+        <action_argument name="DimmerLevel" note="Select the Dimmer Level 0 - 100"/>
+        <action_argument name="DelayTime" note="not used"/>
+        <action_argument name="FadeTime" note="not used"/>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">dimmer_set,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" action_argument="DimmerLevel"/>
+            </parameter_list>
+            <delay ms_delay="10"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <entity name="Dimmer Group" address_components="1">
+        <slider_representation>
+          <press_action name="DimmerSet"/>
+          <valueSource name="DimmerLevel">
+            <unique_identifier address_component="1" name="Address1" format="%s"/>
+          </valueSource>
+        </slider_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+
+      <entity name="Switch" address_components="1">
+        <toggle_button_representation>
+          <release_action name="SwitchOn"> </release_action>
+          <toggle_release_action name="SwitchOff"> </toggle_release_action>
+          <osd_press_action name="SwitchOn"> </osd_press_action>
+          <osd_hold_action name="SwitchOff"> </osd_hold_action>
+          <toggleOnUsingState name="IsLightOn">
+            <unique_identifier name="Address1" address_component="1" format="%s"/>
+          </toggleOnUsingState>
+        </toggle_button_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+    </resource_component_actions>
+    
+    <resource_component_actions resource_type="ENV_SHADECONTROLLER_SOURCE">
+
+      <action name="ShadeSet">
+        <action_argument name="Address1" />
+        <action_argument name="Address2" />
+        <action_argument name="Address3" />
+        <action_argument name="Address4" />
+        <action_argument name="Address5" />
+        <action_argument name="Address6" />
+        <action_argument name="ShadeLevel" />
+        <action_argument name="FadeTime" />
+        <action_argument name="DelayTime" />
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">shade_set,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" action_argument="ShadeLevel" />
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+      </action>
+
+      <entity name="Single Motor Variable Shade" address_components="1">
+        <slider_representation>
+          <release_action name="ShadeSet" />
+          <valueSource name="ShadeLevel">
+            <unique_identifier name="href" address_component="1" format="%s" />
+          </valueSource>
+        </slider_representation>
+        <group_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="0" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="0" />
+            </osd_press_action>
+          </push_button_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="20" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="20" />
+            </osd_press_action>
+          </push_button_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="40" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="40" />
+            </osd_press_action>
+          </push_button_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="60" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="60" />
+            </osd_press_action>
+          </push_button_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="80" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="80" />
+            </osd_press_action>
+          </push_button_representation>
+          <push_button_representation>
+            <release_action name="ShadeSet">
+              <argument name="ShadeLevel" value="100" />
+            </release_action>
+            <osd_press_action name="ShadeSet">
+              <argument name="ShadeLevel" value="100" />
+            </osd_press_action>
+          </push_button_representation>
+        </group_representation>
+        <toggle_button_representation>
+          <press_action name="ShadeSet">
+            <argument name="ShadeLevel" value="100" />
+          </press_action>
+          <toggle_action name="ShadeSet">
+            <argument name="ShadeLevel" value="0" />
+          </toggle_action>
+          <osd_press_action name="ShadeSet">
+            <argument name="ShadeLevel" value="100" />
+          </osd_press_action>
+          <osd_hold_action name="ShadeSet">
+            <argument name="ShadeLevel" value="0" />
+          </osd_hold_action>
+          <toggleOnUsingState name="IsShadeOpen">
+            <unique_identifier name="href" address_component="1" format="%s" />
+          </toggleOnUsingState>
+        </toggle_button_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+
+    </resource_component_actions>
+
+    <resource_component_actions resource_type="ENV_DOOR_LOCK_SOURCE">
+      <action name="LockDoorLock">
+        <action_argument name="DoorLockAddress" note="Entity ID"/>
+        <update_state_variable name="DoorLockStatus_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="DoorLockAddress">Locked</update_state_variable>
+        <update_state_variable name="IsDoorLocked_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="DoorLockAddress">true</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">lock_lock,</parameter>
+              <parameter parameter_data_type="character" action_argument="DoorLockAddress"/>
+            </parameter_list>
+            <delay ms_delay="500"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="UnlockDoorLock">
+        <action_argument name="DoorLockAddress" note="Entity ID"/>
+        <update_state_variable name="DoorLockStatus_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="DoorLockAddress">Unlocked</update_state_variable>
+        <update_state_variable name="IsDoorLocked_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="DoorLockAddress">false</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">unlock_lock,</parameter>
+              <parameter parameter_data_type="character" action_argument="DoorLockAddress"/>
+            </parameter_list>
+            <delay ms_delay="500"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <entity name="Lock" address_components="2">
+        <toggle_button_representation>
+          <release_action name="UnlockDoorLock"/>
+          <toggle_release_action name="LockDoorLock"/>
+        </toggle_button_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+    </resource_component_actions>
+
+    <resource_component_actions resource_type="ENV_GARAGE_DOOR_SOURCE">
+      <action name="CloseGarageDoor">
+        <action_argument name="GarageDoorAddress" note="Entity ID"/>
+        <update_state_variable name="GarageDoorStatus_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="GarageDoorAddress">Closed</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">close_garage_door,</parameter>
+              <parameter parameter_data_type="character" action_argument="GarageDoorAddress"/>
+            </parameter_list>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="OpenGarageDoor">
+        <action_argument name="GarageDoorAddress" note="Entity ID"/>
+        <update_state_variable name="GarageDoorStatus_*" update_type="set" update_source="constant" wildcard_format="%s" wildcard_source="action_argument" wildcard_source_name="GarageDoorAddress">Open</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">open_garage_door,</parameter>
+              <parameter parameter_data_type="character" action_argument="GarageDoorAddress"/>
+            </parameter_list>
+          </command>
+        </command_interface>
+      </action>
+
+      <entity name="Garage Door" address_components="1">
+        <toggle_button_representation>
+          <release_action name="OpenGarageDoor"/>
+          <toggle_release_action name="CloseGarageDoor"/>
+        </toggle_button_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+    </resource_component_actions>
+
+    <custom_component_actions>
+      <action name="TrackEntity">
+        <action_argument name="Address1" />
+        <update_state_variable name="HassEntityArray" update_type="append" update_source="action_argument">Address1</update_state_variable>
+        <update_state_variable name="HassEntityArray" update_type="append" update_source="constant">,</update_state_variable>
+      </action>
+      <action name="AwaitConnection">
+        <update_state_variable name="HassEntityArray" update_type="set" update_source="constant"></update_state_variable>
+        <execute_on_schedule period_ms="0"/>
+        <execute_action_after_delay ms_delay="11000" action_name="SubscribeEvents" action_type="CUSTOM"></execute_action_after_delay>
+        <execute_action_after_delay ms_delay="11000" action_name="StateFilter" action_type="CUSTOM"></execute_action_after_delay>
+        <execute_action_after_delay ms_delay="15000" action_name="SubscribeEntities" action_type="CUSTOM"></execute_action_after_delay>
+      </action>
+      <action name="SubscribeEvents">
+        <execute_on_state_variable_condition name="subscribe_all_events" test_condition="not_equal">NO</execute_on_state_variable_condition>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <command_string type="character">subscribe_events</command_string>
+          </command>
+        </command_interface>
+      </action>
+      <action name="StateFilter">
+        <command_interface interface="ip">
+          <command response_required="no">
+            <command_string type="character">state_filter,</command_string>
+            <parameter_list>
+              <parameter parameter_data_type="character" state_variable="state_filter"/>
+            </parameter_list>
+          </command>
+        </command_interface>
+      </action>
+      <action name="SubscribeEntities">
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">subscribe_entity,</parameter>
+              <parameter parameter_data_type="character" state_variable="HassEntityArray"></parameter>
+            </parameter_list>
+            <delay ms_delay="50"/>
+          </command>
+        </command_interface>
+      </action>
+    </custom_component_actions>
+  </logical_component>
+
+</component>
