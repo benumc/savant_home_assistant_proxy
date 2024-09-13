@@ -5,7 +5,7 @@
   <notes>
   </notes>  
   <control_interfaces preferred="ip">
-    <ip port="8080" response_time_length_ms="1000" protocol="tcp">
+    <ip port="8080" response_time_length_ms="50" protocol="tcp">
         <send_postfix type="hex">0A</send_postfix>
         <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
     </ip>
