@@ -24,12 +24,13 @@ This is a simple TCP proxy that allows your Savant system to communicate with Ho
 1. Download the `hass_savant.xml` file from the repository:
 2. Import this profile into your Savant system’s blueprint:
 - Go to your Savant System’s **Blueprint Manager**.
-- Add the `hass_savant.xml` profile to your configuration.
+- Add the `Hass Savant` profile to your configuration.
 
 ### Step 4: Configure the Ethernet Connection
 1. Set up the **Ethernet connection** between your Savant system and your network.
 2. In the **Savant profile settings**, specify the IP address of your Home Assistant instance so the two systems can communicate.
 - You can find your Home Assistant IP address in the **Supervisor** > **System** > **IP Address** section.
+- If connecting locally, you may be able to use homeassistant.local instead of the ip address.
 
 ### Step 5: Add Devices and Entity IDs
 1. In the Savant system, go to the desired data tables where you want to integrate devices with Home Assistant.
