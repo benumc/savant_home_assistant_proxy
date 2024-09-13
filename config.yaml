@@ -13,4 +13,4 @@ ports:
   8080/tcp: 8080
 host_network: true
 startup: services
-homeassistant_api: tru
+homeassistant_api: true
