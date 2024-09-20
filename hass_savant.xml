@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant"
-  device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.7">
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.7">
 
   <notes>
-  </notes>  
+  </notes>
   <control_interfaces preferred="ip">
     <ip port="8080" response_time_length_ms="50" protocol="tcp">
-        <send_postfix type="hex">0A</send_postfix>
-        <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
+      <send_postfix type="hex">0A</send_postfix>
+      <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
     </ip>
   </control_interfaces>
   <media_interfaces>
@@ -25,12 +24,12 @@
       <resource resource_type="ENV_FANCONTROLLER_SOURCE"/>
       <resource resource_type="ENV_DOOR_LOCK_SOURCE"/>
       <resource resource_type="ENV_GARAGE_DOOR_SOURCE"/>
-      <resource resource_type="ENV_SHADECONTROLLER_SOURCE" />
+      <resource resource_type="ENV_SHADECONTROLLER_SOURCE"/>
     </internal>
   </media_interfaces>
   <state_variable_list>
     <state_variable name="subscribe_all_events" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes">NO</state_variable>
-    <state_variable name="state_filter" owning_logical_component="Home Assistant"  state_center_type="string" state_center_binding="state_filter" user_editable="yes">brightness,state,cover,lock,current_position</state_variable>
+    <state_variable name="state_filter" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="state_filter" user_editable="yes">brightness,state,cover,lock,current_position</state_variable>
     <state_variable name="HassEntityArray" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="HassEntityArray"></state_variable>
 
     <state_variable name="FanSet_0" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed Off">0</state_variable>
@@ -267,10 +266,10 @@
 
       <entity name="Switch" address_components="1">
         <toggle_button_representation>
-          <release_action name="SwitchOn"> </release_action>
-          <toggle_release_action name="SwitchOff"> </toggle_release_action>
-          <osd_press_action name="SwitchOn"> </osd_press_action>
-          <osd_hold_action name="SwitchOff"> </osd_hold_action>
+          <release_action name="SwitchOn"></release_action>
+          <toggle_release_action name="SwitchOff"></toggle_release_action>
+          <osd_press_action name="SwitchOn"></osd_press_action>
+          <osd_hold_action name="SwitchOff"></osd_hold_action>
           <toggleOnUsingState name="IsLightOn">
             <unique_identifier name="Address1" address_component="1" format="%s"/>
           </toggleOnUsingState>
@@ -280,7 +279,7 @@
         </query_status_with_action>
       </entity>
     </resource_component_actions>
-    
+
     <resource_component_actions resource_type="ENV_SHADECONTROLLER_SOURCE">
 
       <action name="ShadeSet">
