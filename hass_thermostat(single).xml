@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="hass" model="thermostat(single)" device_class="HVAC_controller" minimum_component_engine_version="8.5" rpm_xml_version="1.04" rpm_xml_version_date="$Date$" alias="Hass Thermostat">
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="hass" model="thermostat(single)" device_class="HVAC_controller" minimum_component_engine_version="8.5" rpm_xml_version="1.05" rpm_xml_version_date="$Date$" alias="Hass Thermostat">
   <notes>
 
   </notes>
@@ -52,15 +52,22 @@
               <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
               <update state="IsCurrentHVACModeOff" type="boolean">false</update>
             </map>
-            <map key="off">
-              <update state="ThermostatMode" type="string">OFF</update>
+            <map key="cool">
+              <update state="ThermostatMode" type="string">COOL</update>
               <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
-              <update state="IsCurrentHVACModeCool" type="boolean">false</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">true</update>
               <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
-              <update state="IsCurrentHVACModeOff" type="boolean">true</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">false</update>
             </map>
             <map key="auto">
               <update state="ThermostatMode" type="string">AUTO</update>
+              <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">false</update>
+              <update state="IsCurrentHVACModeAuto" type="boolean">true</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">false</update>
+            </map>
+            <map key="off">
+              <update state="ThermostatMode" type="string">OFF</update>
               <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
               <update state="IsCurrentHVACModeCool" type="boolean">false</update>
               <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
@@ -161,6 +168,7 @@
         </command_interface>
       </action>
 
+      <!--
       <action name="IncreaseSingleSetPointTemperature">
         <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
         <action_argument name="ThermostatAddress2" note="not used"/>
@@ -174,7 +182,8 @@
         <update_state_variable name="ThermostatCurrentSetPoint" update_type="decrement" update_source="constant">0.5</update_state_variable>
 
       </action>
-
+      -->
+      
       <!-- Modes -->
 
       <action name="SetHVACModeAuto">
@@ -185,7 +194,7 @@
           <command response_required="no">
             <parameter_list>
               <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
-              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
               <parameter parameter_data_type="character">,auto</parameter>
             </parameter_list>
             <delay ms_delay="10"></delay>
@@ -201,7 +210,7 @@
           <command response_required="no">
             <parameter_list>
               <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
-              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
               <parameter parameter_data_type="character">,heat</parameter>
             </parameter_list>
             <delay ms_delay="10"></delay>
@@ -217,7 +226,7 @@
           <command response_required="no">
             <parameter_list>
               <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
-              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
               <parameter parameter_data_type="character">,cool</parameter>
             </parameter_list>
             <delay ms_delay="10"></delay>
@@ -234,7 +243,7 @@
           <command response_required="no">
             <parameter_list>
               <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
-              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
               <parameter parameter_data_type="character">,off</parameter>
             </parameter_list>
             <delay ms_delay="10"></delay>
@@ -249,7 +258,7 @@
           <common_unique_identifier name="ThermostatAddress" address_component="1"/>
         </screen_representation>
         <query_status_with_action name="TrackEntity" period_ms="0">
-          <with_arg name="Address1" address_component="1" format="%s" />
+          <with_arg name="ThermostatAddress" address_component="1" format="%s" />
         </query_status_with_action>
       </entity>
 
@@ -259,7 +268,7 @@
     <custom_component_actions>
       <action name="TrackEntity">
         <action_argument name="Address1" />
-        <update_state_variable name="HassEntityArray" update_type="append" update_source="action_argument">Address1</update_state_variable>
+        <update_state_variable name="HassEntityArray" update_type="append" update_source="action_argument">ThermostatAddress</update_state_variable>
         <update_state_variable name="HassEntityArray" update_type="append" update_source="constant">,</update_state_variable>
       </action>
       <action name="AwaitConnection">
