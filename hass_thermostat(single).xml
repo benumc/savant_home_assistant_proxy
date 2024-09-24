@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="hass" model="thermostat(single)" device_class="HVAC_controller" minimum_component_engine_version="8.5" rpm_xml_version="1.08" rpm_xml_version_date="$Date$" alias="Hass Thermostat">
+  <notes>
+
+  </notes>
+
+  <control_interfaces preferred="ip">
+    <ip port="8080" response_time_length_ms="50" protocol="tcp">
+      <send_postfix type="hex">0A</send_postfix>
+      <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
+    </ip>
+  </control_interfaces>
+
+  <media_interfaces>
+    <data name_on_component="Ethernet">
+      <combined_media>
+        <data_media type="ethernet"/>
+        <control port="8080"/>
+      </combined_media>
+    </data>
+    <internal name_on_component="HVAC_Controller">
+      <environmental_media/>
+      <resource resource_type="ENV_SINGLE_SETPOINT_HVACCONTROLLER_SOURCE"/>
+    </internal>
+  </media_interfaces>
+  <state_variable_list>
+
+    <state_variable name="subscribe_all_events" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes">NO</state_variable>
+    <state_variable name="state_filter" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="state_filter" user_editable="yes">temperature,current_temperature,preset_mode,state</state_variable>
+    <state_variable name="HassEntityArray" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="HassEntityArray"></state_variable>
+    
+    <!--
+    <state_variable state_center_binding="ThermostatCurrentSetPoint_1" state_center_type="integer" owning_logical_component="Home Assistant" name="ThermostatCurrentSetPoint"></state_variable>
+    <state_variable state_center_binding="ThermostatCurrentTemperature_1" state_center_type="integer" owning_logical_component="Home Assistant" name="ThermostatCurrentTemperature"></state_variable>
+    <state_variable state_center_binding="ThermostatCurrentHumidity_1" state_center_type="integer" owning_logical_component="Home Assistant" name="ThermostatCurrentHumidity"></state_variable>
+    -->
+
+  </state_variable_list>
+  <logical_component logical_component_name="Home Assistant">
+    <implementation>
+      <internal name_on_component="HVAC_Controller" />
+    </implementation>
+    <status_messages>
+      <status_message name="HVACStatus">
+        <data type="character" terminator="_state===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="CurrentState" type="string"/>
+          <data_map match_required="yes">
+
+            <map key="heat">
+              <update state="ThermostatMode" type="string">HEAT</update>
+              <update state="IsCurrentHVACModeHeat" type="boolean">true</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">false</update>
+              <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">false</update>
+            </map>
+            <map key="off">
+              <update state="ThermostatMode" type="string">OFF</update>
+              <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">false</update>
+              <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">true</update>
+            </map>
+            <map key="auto">
+              <update state="ThermostatMode" type="string">AUTO</update>
+              <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">false</update>
+              <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">true</update>
+            </map>
+            <map key="cool">
+              <update state="ThermostatMode" type="string">COOL</update>
+              <update state="IsCurrentHVACModeHeat" type="boolean">false</update>
+              <update state="IsCurrentHVACModeCool" type="boolean">true</update>
+              <update state="IsCurrentHVACModeAuto" type="boolean">false</update>
+              <update state="IsCurrentHVACModeOff" type="boolean">false</update>
+            </map>
+          </data_map>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="curent_temperature">
+        <data type="character" terminator="_current_temperature===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="ThermostatCurrentTemperature" type="integer" />
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="set_point_temperature">
+        <data type="character" terminator="_temperature===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="ThermostatCurrentSetPoint" type="integer" />
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+
+
+      <status_message name="Attributes">
+        <data type="character" terminator="_attributes===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="CurrentAttributes" type="string"/>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+      <status_message name="OtherUpdate">
+        <data type="character" terminator="===" terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <data type="character" terminator_type="end_of_data">
+          <update state="Value" type="string" />
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Service">
+        <constant type="character">type:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="Type" type="string" />
+        </data>
+        <constant type="character">entity:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="EntityID" type="string" />
+        </data>
+        <constant type="character">service:</constant>
+        <data type="character" terminator="," terminator_type="character">
+          <update state="ServiceState" type="string"/>
+        </data>
+        <constant type="character">domain:</constant>
+        <data type="character" terminator="," terminator_type="end_of_data">
+          <update state="FriendlyName" type="string"/>
+        </data>
+        <append_data_to_state_names state="EntityID" />
+      </status_message>
+
+      <status_message name="Unhandled">
+        <data type="character" terminator_type="end_of_data">
+          <update state="Unhandled" type="string"></update>
+        </data>
+      </status_message>
+    </status_messages>
+
+    <resource_component_actions resource_type="ENV_SINGLE_SETPOINT_HVACCONTROLLER_SOURCE">
+      <!-- Heat -->
+
+      <action name="SetSingleSetPointTemperature">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <action_argument name="SetPointTemperature" note="Temperature Bound for Heat Operation in C"/>
+        <update_state_variable name="ThermostatCurrentSetPoint" update_type="set" update_source="action_argument">HeatPointTemperature</update_state_variable>
+
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_single,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" action_argument="SetPointTemperature" />
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+      </action>
+
+      <!--
+      <action name="IncreaseSingleSetPointTemperature">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="ThermostatCurrentSetPoint" update_type="increment" update_source="constant">0.5</update_state_variable>
+
+      </action>
+
+      <action name="DecreaseSingleSetPointTemperature">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="ThermostatCurrentSetPoint" update_type="decrement" update_source="constant">0.5</update_state_variable>
+
+      </action>
+      -->
+
+      <!-- Modes -->
+
+      <action name="SetHVACModeAuto">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="CurrentHVACMode" update_type="set" update_source="constant">0</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,auto</parameter>
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="SetHVACModeHeat">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="CurrentHVACMode" update_type="set" update_source="constant">0</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,heat</parameter>
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+
+      </action>
+      <action name="SetHVACModeCool">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="CurrentHVACMode" update_type="set" update_source="constant">1</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,cool</parameter>
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+
+      </action>
+
+      <action name="SetHVACModeOff">
+        <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
+        <action_argument name="ThermostatAddress2" note="not used"/>
+        <update_state_variable name="CurrentHVACMode" update_type="set" update_source="constant">3</update_state_variable>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_hvac_mode,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,off</parameter>
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
+
+      </action>
+
+
+      <entity name="Zone" address_components="1">
+        <screen_representation>
+          <common_unique_identifier name="ThermostatAddress" address_component="1"/>
+        </screen_representation>
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="ThermostatAddress" address_component="1" format="%s" />
+        </query_status_with_action>
+      </entity>
+
+    </resource_component_actions>
+
+
+    <custom_component_actions>
+      <action name="TrackEntity">
+        <action_argument name="ThermostatAddress" />
+        <update_state_variable name="HassEntityArray" update_type="append" update_source="action_argument">ThermostatAddress</update_state_variable>
+        <update_state_variable name="HassEntityArray" update_type="append" update_source="constant">,</update_state_variable>
+      </action>
+      <action name="AwaitConnection">
+        <update_state_variable name="HassEntityArray" update_type="set" update_source="constant"></update_state_variable>
+        <execute_on_schedule period_ms="0"/>
+        <execute_action_after_delay ms_delay="11000" action_name="SubscribeEvents" action_type="CUSTOM"></execute_action_after_delay>
+        <execute_action_after_delay ms_delay="11000" action_name="StateFilter" action_type="CUSTOM"></execute_action_after_delay>
+        <execute_action_after_delay ms_delay="15000" action_name="SubscribeEntities" action_type="CUSTOM"></execute_action_after_delay>
+      </action>
+      <action name="SubscribeEvents">
+        <execute_on_state_variable_condition name="subscribe_all_events" test_condition="not_equal">NO</execute_on_state_variable_condition>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <command_string type="character">subscribe_events</command_string>
+          </command>
+        </command_interface>
+      </action>
+      <action name="StateFilter">
+        <command_interface interface="ip">
+          <command response_required="no">
+            <command_string type="character">state_filter,</command_string>
+            <parameter_list>
+              <parameter parameter_data_type="character" state_variable="state_filter"/>
+            </parameter_list>
+          </command>
+        </command_interface>
+      </action>
+      <action name="SubscribeEntities">
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">subscribe_entity,</parameter>
+              <parameter parameter_data_type="character" state_variable="HassEntityArray"></parameter>
+            </parameter_list>
+            <delay ms_delay="50"/>
+          </command>
+        </command_interface>
+      </action>
+    </custom_component_actions>
+
+  </logical_component>
+</component>
