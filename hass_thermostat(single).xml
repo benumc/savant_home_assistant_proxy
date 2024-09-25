@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="hass" model="thermostat(single)" device_class="HVAC_controller" minimum_component_engine_version="8.5" rpm_xml_version="1.05" rpm_xml_version_date="$Date$" alias="Hass Thermostat">
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="hass" model="thermostat(single)" device_class="HVAC_controller" minimum_component_engine_version="8.5" rpm_xml_version="1.07" rpm_xml_version_date="$Date$" alias="Hass Thermostat">
   <notes>
 
   </notes>
@@ -98,8 +98,6 @@
         <append_data_to_state_names state="EntityID" />
       </status_message>
 
-
-
       <status_message name="Attributes">
         <data type="character" terminator="_attributes===" terminator_type="character">
           <update state="EntityID" type="string" />
@@ -159,7 +157,7 @@
           <command response_required="no">
             <parameter_list>
               <parameter parameter_data_type="character">climate_set_single,</parameter>
-              <parameter parameter_data_type="character" action_argument="Address1"/>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
               <parameter parameter_data_type="character">,</parameter>
               <parameter parameter_data_type="character" action_argument="SetPointTemperature" />
             </parameter_list>
@@ -168,21 +166,41 @@
         </command_interface>
       </action>
 
-      <!--
+      
       <action name="IncreaseSingleSetPointTemperature">
         <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
         <action_argument name="ThermostatAddress2" note="not used"/>
         <update_state_variable name="ThermostatCurrentSetPoint" update_type="increment" update_source="constant">0.5</update_state_variable>
-
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_single,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" action_argument="SetPointTemperature" />
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
       </action>
 
       <action name="DecreaseSingleSetPointTemperature">
         <action_argument name="ThermostatAddress" note="Thermostat device_id"/>
         <action_argument name="ThermostatAddress2" note="not used"/>
         <update_state_variable name="ThermostatCurrentSetPoint" update_type="decrement" update_source="constant">0.5</update_state_variable>
-
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">climate_set_single,</parameter>
+              <parameter parameter_data_type="character" action_argument="ThermostatAddress"/>
+              <parameter parameter_data_type="character">,</parameter>
+              <parameter parameter_data_type="character" action_argument="SetPointTemperature" />
+            </parameter_list>
+            <delay ms_delay="10"></delay>
+          </command>
+        </command_interface>
       </action>
-      -->
+      
       
       <!-- Modes -->
 
@@ -267,7 +285,7 @@
 
     <custom_component_actions>
       <action name="TrackEntity">
-        <action_argument name="Address1" />
+        <action_argument name="ThermostatAddress" />
         <update_state_variable name="HassEntityArray" update_type="append" update_source="action_argument">ThermostatAddress</update_state_variable>
         <update_state_variable name="HassEntityArray" update_type="append" update_source="constant">,</update_state_variable>
       </action>
