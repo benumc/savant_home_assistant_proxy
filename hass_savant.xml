@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.7">
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.8">
 
   <notes>
   </notes>
@@ -81,9 +81,11 @@
           <data_map match_required="no">
             <map key="closed">
               <update state="IsShadeOpen" type="boolean">false</update>
+              <update state="GarageDoorStatus" type="string">Closed</update>
             </map>
             <map key="open">
               <update state="IsShadeOpen" type="boolean">true</update>
+              <update state="GarageDoorStatus" type="string">Open</update>
             </map>
             <map key="locked">
               <update state="DoorLockStatus" type="string">Locked</update>
@@ -95,13 +97,11 @@
               <update state="IsDimmerOn" type="boolean">true</update>
               <update state="LightPowerStatus" type="string">ON</update>
               <update state="IsLightOn" type="boolean">true</update>
-              <update state="GarageDoorStatus" type="string">Open</update>
             </map>
             <map key="off">
               <update state="IsDimmerOn" type="boolean">false</update>
               <update state="LightPowerStatus" type="string">OFF</update>
               <update state="IsLightOn" type="boolean">false</update>
-              <update state="GarageDoorStatus" type="string">Closed</update>
               <update state="DimmerLevel" type="integer">0</update>
             </map>
           </data_map>
