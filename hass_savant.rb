@@ -241,6 +241,13 @@ module HassRequests
     )
   end
 
+  def toggle_garage_door(entity_id)
+    send_data(
+      type: :call_service, domain: :cover, service: :toggle,
+      target: { entity_id: entity_id }
+    )
+  end
+
   def socket_on(entity_id)
     send_data(
       type: :call_service, domain: :switch, service: :turn_on,
