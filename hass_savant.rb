@@ -166,38 +166,6 @@ module HassRequests
     level.to_i.zero? ? dimmer_off(entity_id) : dimmer_on(entity_id, level)
   end
 
-  def climate_set_single(entity_id, level)
-    send_data(
-      type: :call_service, domain: :climate, service: :set_temperature,
-      service_data: { temperature: level },
-      target: { entity_id: entity_id }
-    )
-  end
-
-  def climate_set_low(entity_id, low_level)
-    send_data(
-      type: :call_service, domain: :climate, service: :set_temperature,
-      service_data: { target_temp_low: level },
-      target: { entity_id: entity_id }
-    )
-  end
-
-  def climate_set_high(entity_id, high_level)
-    send_data(
-      type: :call_service, domain: :climate, service: :set_temperature,
-      service_data: { target_temp_high: level },
-      target: { entity_id: entity_id }
-    )
-  end
-
-  def climate_set_hvac_mode(entity_id, mode)
-    send_data(
-      type: :call_service, domain: :climate, service: :set_hvac_mode,
-      service_data: { hvac_mode: mode },
-      target: { entity_id: entity_id }
-    )
-  end
-
   def shade_set(entity_id, level)
     send_data(
       type: :call_service, domain: :cover, service: :set_cover_position,
@@ -293,6 +261,28 @@ module HassRequests
       target: { entity_id: entity_id }
     )
   end
+end
+
+def remote_on(entity_id)
+  send_data(
+    type: :call_service, domain: :remote, service: :turn_on,
+    target: { entity_id: entity_id }
+  )
+end
+
+def remote_off(entity_id)
+  send_data(
+    type: :call_service, domain: :remote, service: :turn_off,
+    target: { entity_id: entity_id }
+  )
+end
+
+def remote_send_command(entity_id)
+  send_data(
+    type: :call_service, domain: :remote, service: :send_command,
+    service_data: { command: command },
+    target: { entity_id: entity_id }
+  )
 end
 
 class Hass
