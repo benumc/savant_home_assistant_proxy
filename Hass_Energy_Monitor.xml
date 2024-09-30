@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd"
+    manufacturer="Hass" model="Energy_Monitor" alias="Hass Energy monitoring" device_class="Energy_Resource_monitor"
+        minimum_component_engine_version="10.2" rpm_xml_version="1.10">
+    
+    <notes>
+      - Ver 1.10 First working version with the help of Benumc. Fl0zan0
+    </notes>
+
+    <control_interfaces preferred="ip">
+        <ip port="8080" response_time_length_ms="50" protocol="tcp">
+          <send_postfix type="hex">0A</send_postfix>
+          <receive_end_condition test_condition="data" type="hex">0A</receive_end_condition>
+        </ip>
+    </control_interfaces>
+   
+    <media_interfaces>
+        <data name_on_component="Ethernet">
+            <combined_media>
+              <data_media type="ethernet"/>
+              <control port="8080"/>
+            </combined_media>
+          </data>
+        
+          <internal name_on_component="Resource Monitor">
+            <environmental_media></environmental_media>
+            <resource resource_type="ENV_ENERGYRESOURCEMONITOR_SOURCE"/>
+        </internal>    
+    </media_interfaces>
+    
+    <state_variable_list>
+        <state_variable name="subscribe_all_events" owning_logical_component="Monitor" state_center_type="string" user_editable="yes">NO</state_variable>
+        <state_variable name="state_filter" owning_logical_component="Monitor" state_center_type="string" state_center_binding="state_filter" user_editable="yes">state</state_variable>
+        <state_variable name="HassEntityArray" owning_logical_component="Monitor" state_center_type="string" state_center_binding="HassEntityArray"></state_variable>
+        <state_variable name="HassEntityId" owning_logical_component="Monitor" state_center_type="string" state_center_binding="HassEntityId" user_editable="yes">HassEntityId - without power</state_variable>
+        <state_variable name="CurrentEnergyModeName" state_center_binding="CurrentEnergyModeName" owning_logical_component="Monitor" state_center_type="string"></state_variable>
+        <state_variable name="CurrentEnergyMode" state_center_binding="CurrentEnergyMode" owning_logical_component="Monitor" state_center_type="integer"></state_variable>
+        <state_variable name="GraphType" state_center_binding="GraphType" owning_logical_component="Monitor" state_center_type="string">day</state_variable>
+        <state_variable name="GraphSelection" state_center_binding="GraphSelection" owning_logical_component="Monitor" state_center_type="string">Chan1Power</state_variable>
+    </state_variable_list>
+
+    <logical_component logical_component_name="Monitor">
+        <implementation>
+            <internal name_on_component="Resource Monitor"/>
+        </implementation>
+
+        <status_messages>
+          <status_message name="GetPower">
+            <data type="character" terminator="power_state===" terminator_type="character">
+              <update state="junk" type="string" />
+            </data>
+            <data type="character" terminator_type="end_of_data">
+              <update state="Chan1Power" type="integer" />
+            </data>
+          </status_message>
+        </status_messages>
+        
+        <resource_component_actions resource_type="ENV_ENERGYRESOURCEMONITOR_SOURCE">
+            <action name="SetGraphTypeDay">
+                <update_state_variable name="GraphType" update_type="set" update_source="constant">day</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphTypeWeek">
+                <update_state_variable name="GraphType" update_type="set" update_source="constant">week</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphTypeMonth">
+                <update_state_variable name="GraphType" update_type="set" update_source="constant">month</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphTypeYear">
+                <update_state_variable name="GraphType" update_type="set" update_source="constant">year</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphSelection1">
+                <update_state_variable name="GraphSelection" update_type="set" update_source="constant">Chan1Power</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphSelection2">
+                <update_state_variable name="GraphSelection" update_type="set" update_source="constant">Chan2Power</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+            <action name="SetGraphSelection3">
+                <update_state_variable name="GraphSelection" update_type="set" update_source="constant">Chan3Power</update_state_variable>
+                <command_interface interface="ip">
+                    <command></command>
+                </command_interface>
+            </action>
+
+            <entity name="Section" address_components="1">
+                <screen_representation>
+                </screen_representation>    
+            </entity>
+            <entity name="Channel" address_components="1">
+                <screen_representation>
+                </screen_representation>    
+            </entity>
+        </resource_component_actions>
+        
+        <custom_component_actions>
+            
+            <action name="TrackHassEntity">
+                <update_state_variable name="HassEntityArray" update_type="append" update_source="state_variable">HassEntityId</update_state_variable>
+                <update_state_variable name="HassEntityArray" update_type="append" update_source="constant">,</update_state_variable>
+                <execute_on_schedule period_ms="0"/>
+            </action>
+
+            <action name="AwaitConnection">
+              <update_state_variable name="HassEntityArray" update_type="set" update_source="constant"></update_state_variable>
+              <execute_on_schedule period_ms="0"/>
+              <execute_action_after_delay ms_delay="11000" action_name="SubscribeEvents" action_type="CUSTOM"></execute_action_after_delay>
+              <execute_action_after_delay ms_delay="11000" action_name="StateFilter" action_type="CUSTOM"></execute_action_after_delay>
+              <execute_action_after_delay ms_delay="15000" action_name="SubscribeEntities" action_type="CUSTOM"></execute_action_after_delay>
+            </action>
+            <action name="SubscribeEvents">
+              <execute_on_state_variable_condition name="subscribe_all_events" test_condition="not_equal">NO</execute_on_state_variable_condition>
+              <command_interface interface="ip">
+                <command response_required="no">
+                  <command_string type="character">subscribe_events</command_string>
+                </command>
+              </command_interface>
+            </action>
+            <action name="StateFilter">
+              <command_interface interface="ip">
+                <command response_required="no">
+                  <command_string type="character">state_filter,</command_string>
+                  <parameter_list>
+                    <parameter parameter_data_type="character" state_variable="state_filter"/>
+                  </parameter_list>
+                </command>
+              </command_interface>
+            </action>
+            <action name="SubscribeEntities">
+              <command_interface interface="ip">
+                <command response_required="no">
+                  <parameter_list>
+                    <parameter parameter_data_type="character">subscribe_entity,</parameter>
+                    <parameter parameter_data_type="character" state_variable="HassEntityArray"></parameter>
+                  </parameter_list>
+                  <delay ms_delay="50"/>
+                </command>
+              </command_interface>
+            </action>
+          </custom_component_actions>
+ </logical_component>
+</component>
