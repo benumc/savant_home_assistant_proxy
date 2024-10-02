@@ -277,6 +277,14 @@ def remote_off(entity_id)
   )
 end
 
+def remote_send_command(entity_id)
+  send_data(
+    type: :call_service, domain: :remote, service: :send_command,
+    service_data: { command: command },
+    target: { entity_id: entity_id }
+  )
+end
+
 def media_player_on(entity_id)
   send_data(
     type: :call_service, domain: :media_player, service: :turn_on,
@@ -291,7 +299,7 @@ def media_player_off(entity_id)
   )
 end
 
-def remote_send_command(entity_id)
+def mediaplayer_send_command(entity_id)
   send_data(
     type: :call_service, domain: :remote, service: :send_command,
     service_data: { command: command },
