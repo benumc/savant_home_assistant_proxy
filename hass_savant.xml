@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="3.9">
+<component xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="racepoint_component_profile.xsd" manufacturer="Hass" model="Savant" alias="Home Assistant" device_class="Lighting_controller" minimum_component_engine_version="0" rpm_xml_version="4.0">
 
   <notes>
+    4.0 : Adding Buttons to the lighting control part, changed switch loads to the switch domain
   </notes>
   <control_interfaces preferred="ip">
     <ip port="8080" response_time_length_ms="50" protocol="tcp">
@@ -29,7 +30,7 @@
   </media_interfaces>
   <state_variable_list>
     <state_variable name="subscribe_all_events" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes">NO</state_variable>
-    <state_variable name="state_filter" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="state_filter" user_editable="yes">brightness,state,cover,lock,current_position</state_variable>
+    <state_variable name="state_filter" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="state_filter" user_editable="yes">brightness,state,cover,lock,current_position,switch</state_variable>
     <state_variable name="HassEntityArray" owning_logical_component="Home Assistant" state_center_type="string" state_center_binding="HassEntityArray"></state_variable>
 
     <state_variable name="FanSet_0" owning_logical_component="Home Assistant" state_center_type="string" user_editable="yes" note="Fan Speed Off">0</state_variable>
@@ -97,12 +98,14 @@
               <update state="IsDimmerOn" type="boolean">true</update>
               <update state="LightPowerStatus" type="string">ON</update>
               <update state="IsLightOn" type="boolean">true</update>
+              <update state="IsLedOn" type="boolean">true</update>
             </map>
             <map key="off">
               <update state="IsDimmerOn" type="boolean">false</update>
               <update state="LightPowerStatus" type="string">OFF</update>
               <update state="IsLightOn" type="boolean">false</update>
               <update state="DimmerLevel" type="integer">0</update>
+              <update state="IsLedOn" type="boolean">false</update>
             </map>
           </data_map>
         </data>
@@ -203,7 +206,7 @@
         <command_interface interface="ip">
           <command response_required="no">
             <parameter_list>
-              <parameter parameter_data_type="character">switch_on,</parameter>
+              <parameter parameter_data_type="character">socket_on,</parameter>
               <parameter parameter_data_type="character" action_argument="Address1"/>
             </parameter_list>
             <delay ms_delay="10"/>
@@ -221,7 +224,7 @@
         <command_interface interface="ip">
           <command response_required="no">
             <parameter_list>
-              <parameter parameter_data_type="character">switch_off,</parameter>
+              <parameter parameter_data_type="character">socket_off,</parameter>
               <parameter parameter_data_type="character" action_argument="Address1"/>
             </parameter_list>
             <delay ms_delay="10"/>
@@ -246,6 +249,41 @@
               <parameter parameter_data_type="character" action_argument="Address1"/>
               <parameter parameter_data_type="character">,</parameter>
               <parameter parameter_data_type="character" action_argument="DimmerLevel"/>
+            </parameter_list>
+            <delay ms_delay="10"/>
+          </command>
+        </command_interface>
+      </action>
+
+      <action name="ButtonPress">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="LED ID"/>
+        <action_argument name="Address3" note="not used"/>
+        <action_argument name="Address4" note="not used"/>
+        <action_argument name="Address5" note="not used"/>
+        <action_argument name="Address6" note="not used"/>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">button_press,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
+            </parameter_list>
+            <delay ms_delay="10"/>
+          </command>
+        </command_interface>
+      </action>
+      <action name="ButtonPressAndRelease">
+        <action_argument name="Address1" note="Entity ID"/>
+        <action_argument name="Address2" note="LED ID"/>
+        <action_argument name="Address3" note="not used"/>
+        <action_argument name="Address4" note="not used"/>
+        <action_argument name="Address5" note="not used"/>
+        <action_argument name="Address6" note="not used"/>
+        <command_interface interface="ip">
+          <command response_required="no">
+            <parameter_list>
+              <parameter parameter_data_type="character">button_press,</parameter>
+              <parameter parameter_data_type="character" action_argument="Address1"/>
             </parameter_list>
             <delay ms_delay="10"/>
           </command>
@@ -278,6 +316,29 @@
           <with_arg name="Address1" address_component="1" format="%s" />
         </query_status_with_action>
       </entity>
+
+      <entity name="Keypad Button" address_components="2">
+        <toggle_button_representation>
+            <press_action name="ButtonPress"></press_action>
+            <!-- <release_action name="ButtonRelease"></release_action> -->
+            <toggle_action name="ButtonPress"></toggle_action>
+            <toggle_release_action name="ButtonRelease"></toggle_release_action>
+            <osd_press_action name="ButtonPressAndRelease"></osd_press_action>
+            <osd_hold_action name="ButtonPressAndRelease"></osd_hold_action>
+            <toggleOnUsingState name="IsLedOn">
+                <unique_identifier name="Address2" address_component="2" format="%s"/>
+            </toggleOnUsingState>
+        </toggle_button_representation>
+
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="1" format="%s" />
+        </query_status_with_action>
+
+        <query_status_with_action name="TrackEntity" period_ms="0">
+          <with_arg name="Address1" address_component="2" format="%s" />
+        </query_status_with_action>
+
+    </entity>
     </resource_component_actions>
 
     <resource_component_actions resource_type="ENV_SHADECONTROLLER_SOURCE">
